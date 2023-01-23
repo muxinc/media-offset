@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Clip a YouTube video with start/end time</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.28.0/themes/prism.min.css" />
+    <link rel="stylesheet" href="./style.css" />
+
+    <style>
+      .example,
+      youtube-video {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+        line-height: 0;
+      }
+    </style>
+
+    <script type="module" src="../media-offset.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/youtube-video-element"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.28.0/prism.min.js"></script>
+  </head>
+  <body>
+    <br>
+    <h1>Clip a YouTube video with start/end time</h1>
+    <br>
+
+    <div class="example">
+      <youtube-video data-offset="10 13" autoplay loop muted src="https://www.youtube.com/watch?v=C7dPqrmDWxs"></youtube-video>
+    </div>
+
+    <br>
+
+    <p>
+      You can even create media offsets with YouTube videos by using the
+      <a href="https://github.com/muxinc/youtube-video-element"><code>&lt;youtube-video&gt;</code></a>
+      webcomponent with a HTMLMediaElement compatible API.
+    </p>
+
+    <br>
+
+    <script>
+      fetch('./nav.html')
+        .then((res) => res.text())
+        .then((text) => {
+          let tmp = document.createElement('template');
+          tmp.innerHTML = text;
+          document.body.prepend(tmp.content);
+        });
+
+      for (let example of document.querySelectorAll('.example')) {
+        let tmp = document.createElement('template');
+        tmp.innerHTML = `<pre class="language-html"><code></code></pre>`;
+        let code = tmp.content.querySelector('code');
+        code.textContent = example.innerHTML;
+        example.after(tmp.content);
+      }
+    </script>
+  </body>
+</html>

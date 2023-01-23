@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Clip a Media Chrome video with start/end time</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.28.0/themes/prism.min.css" />
+    <link rel="stylesheet" href="./style.css" />
+
+    <style>
+      .example,
+      media-controller,
+      video {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        line-height: 0;
+      }
+    </style>
+
+    <script type="module" src="../media-offset.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/media-chrome/+esm"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.28.0/prism.min.js"></script>
+  </head>
+  <body>
+    <br>
+    <h1>Clip a Media Chrome video with start/end time</h1>
+    <br>
+
+    <div class="example">
+      <media-controller>
+        <video data-offset="7 10" slot="media" playsinline muted>
+          <source src="https://stream.mux.com/O6LdRc0112FEJXH00bGsN9Q31yu5EIVHTgjTKRkKtEq1k/low.mp4"/>
+        </video>
+        <media-control-bar>
+          <media-play-button></media-play-button>
+          <media-seek-backward-button></media-seek-backward-button>
+          <media-seek-forward-button></media-seek-forward-button>
+          <media-mute-button></media-mute-button>
+          <media-volume-range></media-volume-range>
+          <media-time-range></media-time-range>
+          <media-time-display show-duration></media-time-display>
+          <media-playback-rate-button></media-playback-rate-button>
+          <media-fullscreen-button></media-fullscreen-button>
+        </media-control-bar>
+      </media-controller>
+    </div>
+
+    <br>
+
+    <script>
+      fetch('./nav.html')
+        .then((res) => res.text())
+        .then((text) => {
+          let tmp = document.createElement('template');
+          tmp.innerHTML = text;
+          document.body.prepend(tmp.content);
+        });
+
+      for (let example of document.querySelectorAll('.example')) {
+        let tmp = document.createElement('template');
+        tmp.innerHTML = `<pre class="language-html"><code></code></pre>`;
+        let code = tmp.content.querySelector('code');
+        code.textContent = example.innerHTML;
+        example.after(tmp.content);
+      }
+    </script>
+  </body>
+</html>
