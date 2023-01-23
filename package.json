@@ -1,0 +1,47 @@
+{
+  "name": "media-offset",
+  "version": "0.1.1",
+  "description": "Configures a media element to lock playback to a defined segment of the media.",
+  "main": "media-offset.js",
+  "scripts": {
+    "lint": "eslint *.js",
+    "test": "web-test-runner --config test/web-test-runner.config.js",
+    "dev": "npx serve . -c vercel.json"
+  },
+  "repository": "luwes/media-offset",
+  "author": "Wesley Luyten <me@wesleyluyten.com> (https://wesleyluyten.com)",
+  "license": "MIT",
+  "homepage": "https://github.com/luwes/media-offset#readme",
+  "bugs": {
+    "url": "https://github.com/luwes/media-offset/issues"
+  },
+  "devDependencies": {
+    "eslint": "^8.32.0"
+  },
+  "eslintConfig": {
+    "root": true,
+    "globals": {
+      "globalThis": "writable"
+    },
+    "env": {
+      "browser": true,
+      "es6": true,
+      "node": true,
+      "mocha": true
+    },
+    "extends": [
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2022,
+      "sourceType": "module"
+    }
+  },
+  "keywords": [
+    "audio",
+    "video",
+    "player",
+    "web component",
+    "custom element"
+  ]
+}
