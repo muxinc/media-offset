@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Offset a Mux player video with a start/end time</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.28.0/themes/prism.min.css" />
+    <link rel="stylesheet" href="./style.css" />
+
+    <style>
+      .example,
+      mux-player {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        line-height: 0;
+      }
+    </style>
+
+    <script type="module" src="../media-offset.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mux/mux-player"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.28.0/prism.min.js"></script>
+  </head>
+  <body>
+    <br>
+    <h1>Offset a Mux player video with a start/end time</h1>
+    <br>
+
+    <div class="example">
+      <mux-player
+        data-offset="10 20"
+        data-offset-media="media"
+        playback-id="O6LdRc0112FEJXH00bGsN9Q31yu5EIVHTgjTKRkKtEq1k"
+        stream-type="on-demand"
+        playsinline
+        muted
+      ></mux-player>
+    </div>
+
+    <br>
+
+    <script>
+      fetch('./nav.html')
+        .then((res) => res.text())
+        .then((text) => {
+          let tmp = document.createElement('template');
+          tmp.innerHTML = text;
+          document.body.prepend(tmp.content);
+        });
+
+      for (let example of document.querySelectorAll('.example')) {
+        let tmp = document.createElement('template');
+        tmp.innerHTML = `<pre class="language-html"><code></code></pre>`;
+        let code = tmp.content.querySelector('code');
+        code.textContent = example.innerHTML;
+        example.after(tmp.content);
+      }
+    </script>
+  </body>
+</html>

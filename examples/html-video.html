@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Offset a HTML video with a start time</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.28.0/themes/prism.min.css" />
+    <link rel="stylesheet" href="./style.css" />
+
+    <style>
+      .example,
+      video {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        line-height: 0;
+      }
+    </style>
+
+    <script type="module" src="../media-offset.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.28.0/prism.min.js"></script>
+  </head>
+  <body>
+    <br>
+    <h1>Offset a HTML video with a start time</h1>
+    <br>
+
+    <div class="example">
+      <video data-offset="50" controls playsinline muted>
+        <source src="https://stream.mux.com/O6LdRc0112FEJXH00bGsN9Q31yu5EIVHTgjTKRkKtEq1k/low.mp4" />
+      </video>
+    </div>
+
+    <br>
+
+    <script>
+      fetch('./nav.html')
+        .then((res) => res.text())
+        .then((text) => {
+          let tmp = document.createElement('template');
+          tmp.innerHTML = text;
+          document.body.prepend(tmp.content);
+        });
+
+      for (let example of document.querySelectorAll('.example')) {
+        let tmp = document.createElement('template');
+        tmp.innerHTML = `<pre class="language-html"><code></code></pre>`;
+        let code = tmp.content.querySelector('code');
+        code.textContent = example.innerHTML;
+        example.after(tmp.content);
+      }
+    </script>
+  </body>
+</html>
