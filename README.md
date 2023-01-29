@@ -22,7 +22,7 @@ This video will autoplay muted and loop through the segment from 5s to 8s.
 
 - [Media Chrome](https://github.com/muxinc/media-chrome) Your media player's dancing suit. 🕺
 - [`<media-playlist>`](https://github.com/muxinc/media-playlist) A custom element for playing through a set of audio and/or video elements.
-- [`media-group`](https://github.com/muxinc/media-group) Sync and control multiple audio and/or video elements.
+- [`media-group`](https://github.com/luwes/media-group) Sync and control multiple audio and/or video elements.
 - [`<hls-video>`](https://github.com/muxinc/hls-video-element) A web component for playing HTTP Live Streaming (HLS) videos.
 - [`<youtube-video>`](https://github.com/muxinc/youtube-video-element) A web component for the YouTube player.
 - [`<vimeo-video>`](https://github.com/luwes/vimeo-video-element) A web component for the Vimeo player.
