@@ -21,22 +21,22 @@
   </head>
   <body>
     <br>
-    <h1>Offset a HTML video with a start time</h1>
+    <h1>Offset a video with start/end time (JS API)</h1>
     <br>
 
     <div class="example">
-      <video id="vid" data-offset="50" controls playsinline>
+      <video id="vid" controls playsinline>
         <source src="https://stream.mux.com/O6LdRc0112FEJXH00bGsN9Q31yu5EIVHTgjTKRkKtEq1k/low.mp4" />
       </video>
+      <script type="module">
+        import { mediaOffset } from '../media-offset.js';
+        mediaOffset(vid, { start: 50, end: 55 });
+      </script>
     </div>
 
     <br>
 
     <script type="module">
-      import { mediaOffset } from '../media-offset.js';
-
-      mediaOffset(vid, { start: 50 });
-
       fetch('./nav.html')
         .then((res) => res.text())
         .then((text) => {
