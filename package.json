@@ -5,7 +5,6 @@
   "main": "media-offset.js",
   "scripts": {
     "lint": "eslint *.js",
-    "test": "web-test-runner --config test/web-test-runner.config.js",
     "dev": "npx serve . -c vercel.json"
   },
   "repository": "luwes/media-offset",

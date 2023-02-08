@@ -16,9 +16,13 @@
         aspect-ratio: 16 / 9;
         line-height: 0;
       }
+
+      media-volume-range[media-volume-unavailable] {
+        display: none;
+      }
     </style>
 
-    <script type="module" src="../media-offset.js"></script>
+    <script type="module" src="../media-offset-attribute.js"></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/media-chrome/+esm"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.28.0/prism.min.js"></script>
   </head>
@@ -29,7 +33,7 @@
 
     <div class="example">
       <media-controller>
-        <video data-offset="7 10" slot="media" playsinline muted>
+        <video data-offset="7 10" data-offset-shim slot="media" playsinline muted>
           <source src="https://stream.mux.com/O6LdRc0112FEJXH00bGsN9Q31yu5EIVHTgjTKRkKtEq1k/low.mp4"/>
         </video>
         <media-control-bar>
