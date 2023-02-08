@@ -2,9 +2,9 @@
   "name": "media-offset",
   "version": "0.2.0",
   "description": "Configures a media element to lock playback to a defined segment of the media.",
-  "main": "media-offset.js",
+  "main": "media-offset-attribute.js",
   "files": [
-    "media-offset-attribute.js"
+    "media-offset.js"
   ],
   "scripts": {
     "lint": "eslint *.js",
