@@ -1,251 +1,156 @@
 
-const mediaState = new WeakMap();
-const observer = new MutationObserver(mutationCallback);
+export function mediaOffset(media, options) {
+  const mo = new MediaOffset(media);
+  mo.start = options.start;
+  mo.end = options.end;
+  return mo;
+}
 
-function mutationCallback(mutationsList) {
-  for (let mutation of mutationsList) {
-    if (mutation.type === 'childList') {
-      mutation.removedNodes.forEach(toggleMediaOffset);
-      mutation.addedNodes.forEach(toggleMediaOffset);
-    } else if (mutation.type === 'attributes') {
-      if (mutation.attributeName === 'data-offset') {
-        toggleMediaOffset(mutation.target);
-      }
+export class MediaOffset {
+  #media;
+  #initialTime;
+  #timeInterval;
+  #start;
+  #end;
+
+  constructor(media) {
+    this.#media = media;
+    media.addEventListener('durationchange', this.#seekInSeekableRange);
+    media.addEventListener('timeupdate', this.#onTimeupdate);
+    media.addEventListener('seeking', this.#seekInSeekableRange);
+    media.addEventListener('playing', this.#onPlaying);
+  }
+
+  destroy() {
+    const media = this.#media;
+    media.removeEventListener('durationchange', this.#seekInSeekableRange);
+    media.removeEventListener('timeupdate', this.#onTimeupdate);
+    media.removeEventListener('seeking', this.#seekInSeekableRange);
+    media.removeEventListener('playing', this.#onPlaying);
+  }
+
+  #seekInSeekableRange = () => {
+    const media = this.#media;
+    if (media.readyState === 0) return;
+
+    // Setting preload to `none` from `auto` was required on iOS to fix a bug
+    // that caused no `timeupdate` events to fire after seeking ¯\_(ツ)_/¯
+    const wasAuto = media.preload === 'auto';
+    if (wasAuto) {
+      media.preload = 'none';
+    }
+
+    if (this.currentTime < 0) {
+      this.currentTime = 0;
+    }
+
+    if (this.currentTime > this.duration) {
+      this.currentTime = this.duration;
+    }
+
+    if (wasAuto) {
+      media.preload = 'auto';
     }
   }
-}
 
-observer.observe(document, {
-  attributes: true,
-  attributeFilter: ['data-offset', 'data-offset-media'],
-  attributeOldValue: true,
-  childList: true,
-  subtree: true,
-});
+  #onTimeupdate = () => {
+    const media = this.#media;
+    const { currentTime, duration, ended } = this;
 
-document.querySelectorAll(`[${'data-offset'}]`)
-  .forEach(toggleMediaOffset);
+    clearInterval(this.#timeInterval);
 
-
-async function toggleMediaOffset(target) {
-  if (target.localName?.includes('-')) {
-    await customElements.whenDefined(target.localName);
-  }
-
-  const objPath = target.getAttribute?.('data-offset-media');
-  const media = objPath ? objPath.split('.').reduce((o, i) => o[i], target) : target;
-
-  if (!isMediaElement(media)) return;
-
-  mediaState.set(media, {
-    getOffsetAttribute: () => target.getAttribute('data-offset')
-  });
-
-  if (target.getAttribute('data-offset')) {
-    addMediaOffset(media);
-    return;
-  }
-
-  removeMediaOffset(media);
-}
-
-function isMediaElement(node) {
-  return (
-    node instanceof HTMLMediaElement ||
-    node.localName?.endsWith('video') ||
-    node.localName?.endsWith('audio') ||
-    node.localName?.endsWith('player')
-  );
-}
-
-function mediaOffset(media) {
-  const val = mediaState.get(media).getOffsetAttribute();
-
-  if (!val) {
-    return { start: 0, end: undefined };
-  }
-
-  const [start, end] = val.split(/\s+/);
-  return { start: +start, end: end == null ? undefined : +end };
-}
-
-function onSeeking({ currentTarget: media }) {
-  if (media.currentTime < 0) {
-    media.currentTime = 0;
-  }
-
-  if (media.currentTime > media.duration) {
-    media.currentTime = media.duration;
-  }
-}
-
-function onTimeupdate({ currentTarget: media }) {
-  const { currentTime, duration, ended } = media;
-  const offset = mediaOffset(media);
-
-  clearInterval(mediaState.get(media).interval);
-
-  if (offset.start > 0 && currentTime < 0) {
-    media.currentTime = 0;
-    return;
-  }
-
-  if (offset.end == null) return;
-
-  if (ended) {
-
-    if (media.loop) {
-      media.currentTime = 0;
+    if (this.start > 0 && currentTime < 0) {
+      this.currentTime = 0;
       return;
     }
 
-    media.pause();
-    media.dispatchEvent(new Event('ended'));
+    if (this.end == null) return;
 
-    return;
+    if (ended) {
+
+      if (media.loop) {
+        this.currentTime = 0;
+        return;
+      }
+
+      media.pause();
+      media.dispatchEvent(new Event('ended'));
+
+      return;
+    }
+
+    // When the playhead is 200ms or less from the end check every 10ms
+    // for increased accuracy. timeupdate is only fired every ~150ms or so.
+    if (currentTime + .2 > duration) {
+      this.#timeInterval = setInterval(this.#onTimeupdate, 10);
+    }
   }
 
-  // When the playhead is 200ms or less from the end check every 10ms
-  // for increased accuracy. timeupdate is only fired every ~150ms or so.
-  if (currentTime + .2 > duration) {
-    const interval = setInterval(onTimeupdate, 10, { currentTarget: media });
-    mediaState.get(media).interval = interval;
+  #onPlaying = () => {
+    if (this.ended) {
+      this.currentTime = 0;
+    }
   }
-}
 
-function onPlaying({ currentTarget: media }) {
-  const { ended } = media;
-
-  if (ended) {
-    media.currentTime = 0;
+  get start() {
+    return this.#start;
   }
-}
 
-function addMediaOffset(media) {
-  let { descriptors } = mediaState.get(media);
-  if (!descriptors) {
-    descriptors = mediaState.get(media).descriptors = {};
+  set start(val) {
+    this.#start = +val;
+    this.#seekInSeekableRange();
+  }
 
-    const oldCurrentTime = media.currentTime;
+  get end() {
+    return this.#end;
+  }
 
-    media.addEventListener('timeupdate', onTimeupdate);
-    media.addEventListener('seeking', onSeeking);
-    media.addEventListener('playing', onPlaying);
+  set end(val) {
+    this.#end = +val;
+    this.#seekInSeekableRange();
+  }
 
-    // Patch the media instance, not the prototype.
-    // Restore original descriptors if the offset attribute is removed.
-    if ('currentTime' in media) {
-      const currentTime = getDescriptor(media, 'currentTime');
-      descriptors.currentTime = currentTime;
+  get currentTime() {
+    return getNative(this.#media, 'currentTime') - this.start;
+  }
 
-      Object.defineProperty(media, 'currentTime', {
-        configurable: true,
-        get() {
-          return currentTime.get.call(media) - mediaOffset(media).start;
-        },
-        set(seconds) {
-          currentTime.set.call(media, +seconds + mediaOffset(media).start);
-        },
-      });
+  set currentTime(val) {
+    setNative(this.#media, 'currentTime', +val + this.start);
+  }
+
+  get duration() {
+    if (this.end > 0) {
+      return this.end - this.start;
     }
+    return getNative(this.#media, 'duration') - this.start;
+  }
 
-    if ('duration' in media) {
-      const duration = getDescriptor(media, 'duration');
-      descriptors.duration = duration;
+  get ended() {
+    return this.currentTime >= this.duration;
+  }
 
-      Object.defineProperty(media, 'duration', {
-        configurable: true,
-        get() {
-          const offset = mediaOffset(media);
-          if (offset.end > 0) {
-            return offset.end - offset.start;
-          }
-          return duration.get.call(media) - offset.start;
-        },
-      });
-    }
+  get seekable() {
+    return getRanges(getNative(this.#media, 'seekable'), this.start, this.duration);
+  }
 
-    if ('currentTime' in media && 'duration' in media) {
-      descriptors.ended = getDescriptor(media, 'ended');
+  get buffered() {
+    return getRanges(getNative(this.#media, 'buffered'), this.start, this.duration);
+  }
 
-      Object.defineProperty(media, 'ended', {
-        configurable: true,
-        get() {
-          return media.currentTime >= media.duration;
-        },
-      });
-    }
-
-    if ('seekable' in media) {
-      descriptors.seekable = getDescriptor(media, 'seekable');
-
-      Object.defineProperty(media, 'seekable', {
-        configurable: true,
-        get: createGetRanges(media, descriptors.seekable),
-      });
-    }
-
-    if ('buffered' in media) {
-      descriptors.buffered = getDescriptor(media, 'buffered');
-
-      Object.defineProperty(media, 'buffered', {
-        configurable: true,
-        get: createGetRanges(media, descriptors.buffered),
-      });
-    }
-
-    if ('played' in media) {
-      descriptors.played = getDescriptor(media, 'played');
-
-      Object.defineProperty(media, 'played', {
-        configurable: true,
-        get: createGetRanges(media, descriptors.played),
-      });
-    }
-
-    media.dispatchEvent(new Event('durationchange'));
-    media.dispatchEvent(new Event('progress'));
-    media.currentTime = oldCurrentTime;
+  get played() {
+    return getRanges(getNative(this.#media, 'played'), this.start, this.duration);
   }
 }
 
-function createGetRanges(media, descriptor) {
-  return function() {
-    const offset = mediaOffset(media);
-    const orig = descriptor.get.call(media);
-    const ranges = [];
-
-    for (let i = 0; i < orig.length; i++) {
-      ranges[i] = [
-        Math.max(0, orig.start(i) - offset.start),
-        Math.min(Math.max(0, orig.end(i) - offset.start), media.duration)
-      ];
-    }
-
-    return createTimeRanges(ranges);
-  }
+function getNative(obj, prop) {
+  return getDescriptor(obj, prop).get.call(obj);
 }
 
-function removeMediaOffset(media) {
-  let state = mediaState.get(media);
-  if (state) {
-    mediaState.delete(media);
-
-    media.removeEventListener('timeupdate', onTimeupdate);
-    media.removeEventListener('seeking', onSeeking);
-    media.removeEventListener('playing', onPlaying);
-
-    for (let prop in state.descriptors) {
-      Object.defineProperty(media, prop, state.descriptors[prop]);
-    }
-
-    media.dispatchEvent(new Event('durationchange'));
-    media.dispatchEvent(new Event('progress'));
-    media.dispatchEvent(new Event('timeupdate'));
-  }
+function setNative(obj, prop, val) {
+  return getDescriptor(obj, prop).set.call(obj, val);
 }
 
-function getDescriptor(obj, prop) {
+export function getDescriptor(obj, prop) {
   for (
     let proto = obj;
     proto && proto !== HTMLElement.prototype;
@@ -254,6 +159,19 @@ function getDescriptor(obj, prop) {
     const descriptor = Object.getOwnPropertyDescriptor(proto, prop);
     if (descriptor) return descriptor;
   }
+}
+
+function getRanges(orig, start, duration) {
+  const ranges = [];
+
+  for (let i = 0; i < orig.length; i++) {
+    ranges[i] = [
+      Math.max(0, orig.start(i) - start),
+      Math.min(Math.max(0, orig.end(i) - start), duration)
+    ];
+  }
+
+  return createTimeRanges(ranges);
 }
 
 /**
