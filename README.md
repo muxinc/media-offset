@@ -3,12 +3,12 @@
 Configures a media element to lock playback to a defined segment of the media.
 The user will not be able to seek to the outside parts of the video.
 
-## Usage
+## Usage ([Codesandbox](https://codesandbox.io/s/media-offset-ulql54?file=/index.html))
 
 This video will autoplay muted and loop through the segment from 5s to 8s.
 
 ```html
-  <script type="module" src="https://cdn.jsdelivr.net/npm/media-offset"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/media-offset/+esm"></script>
   <video
     data-offset="5 8"
     src="https://stream.mux.com/O6LdRc0112FEJXH00bGsN9Q31yu5EIVHTgjTKRkKtEq1k/low.mp4"
