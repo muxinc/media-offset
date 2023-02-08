@@ -3,16 +3,19 @@
   "version": "0.2.0",
   "description": "Configures a media element to lock playback to a defined segment of the media.",
   "main": "media-offset.js",
+  "files": [
+    "media-offset-attribute.js"
+  ],
   "scripts": {
     "lint": "eslint *.js",
     "dev": "npx serve . -c vercel.json"
   },
-  "repository": "luwes/media-offset",
+  "repository": "muxinc/media-offset",
   "author": "Wesley Luyten <me@wesleyluyten.com> (https://wesleyluyten.com)",
   "license": "MIT",
-  "homepage": "https://github.com/luwes/media-offset#readme",
+  "homepage": "https://github.com/muxinc/media-offset#readme",
   "bugs": {
-    "url": "https://github.com/luwes/media-offset/issues"
+    "url": "https://github.com/muxinc/media-offset/issues"
   },
   "devDependencies": {
     "eslint": "^8.32.0"
