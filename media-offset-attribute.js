@@ -9,7 +9,7 @@ function mutationCallback(mutationsList) {
       mutation.removedNodes.forEach(toggleMediaOffset);
       mutation.addedNodes.forEach(toggleMediaOffset);
     } else if (mutation.type === 'attributes') {
-      if (mutation.attributeName === 'data-offset') {
+      if (mutation.attributeName.startsWith('data-offset')) {
         toggleMediaOffset(mutation.target);
       }
     }
@@ -18,37 +18,35 @@ function mutationCallback(mutationsList) {
 
 observer.observe(document, {
   attributes: true,
-  attributeFilter: ['data-offset', 'data-offset-media'],
+  attributeFilter: ['data-offset', 'data-offset-shim', 'data-offset-media'],
   attributeOldValue: true,
   childList: true,
   subtree: true,
 });
 
-document.querySelectorAll(`[${'data-offset'}]`)
+document.querySelectorAll('[data-offset]')
   .forEach(toggleMediaOffset);
 
 async function toggleMediaOffset(target) {
-
   if (target.localName?.includes('-')) {
     await customElements.whenDefined(target.localName);
   }
 
-  const objPath = target.getAttribute?.('data-offset-media');
+  const objPath = target.dataset?.offsetMedia;
   const media = objPath ? objPath.split('.').reduce((o, i) => o[i], target) : target;
 
   if (!isMediaElement(media)) return;
 
-  if (target.getAttribute('data-offset')) {
+  if ('offset' in target.dataset) {
 
-    const options = mediaOffsetOptions(target.getAttribute('data-offset'));
+    const options = mediaOffsetOptions(target.dataset);
     const mo = mediaOffsets.get(media);
     if (mo) {
+      mo.shim = options.shim;
       mo.start = options.start;
       mo.end = options.end;
       return;
     }
-
-    console.log(99, media, options);
 
     mediaOffsets.set(media, mediaOffset(media, options));
     return;
@@ -66,9 +64,19 @@ function isMediaElement(node) {
   );
 }
 
-function mediaOffsetOptions(val) {
-  if (!val) return { start: 0, end: undefined };
+function mediaOffsetOptions({ offset, offsetShim }) {
+  if (!offset) {
+    return {
+      start: 0,
+      end: undefined,
+      shim: offsetShim != null
+    };
+  }
 
-  const [start, end] = val.split(/\s+/);
-  return { start: +start, end: end == null ? undefined : +end };
+  const [start, end] = offset.split(/\s+/);
+  return {
+    start: +start,
+    end: end == null ? undefined : +end,
+    shim: offsetShim != null
+  };
 }

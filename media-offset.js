@@ -1,6 +1,7 @@
 
 export function mediaOffset(media, options) {
   const mo = new MediaOffset(media);
+  mo.shim = options.shim;
   mo.start = options.start;
   mo.end = options.end;
   return mo;
@@ -10,6 +11,7 @@ export class MediaOffset {
   #media;
   #initialTime;
   #timeInterval;
+  #shim;
   #start;
   #end;
 
@@ -27,6 +29,8 @@ export class MediaOffset {
     media.removeEventListener('timeupdate', this.#onTimeupdate);
     media.removeEventListener('seeking', this.#seekInSeekableRange);
     media.removeEventListener('playing', this.#onPlaying);
+
+    this.shim = false;
   }
 
   #seekInSeekableRange = () => {
@@ -92,6 +96,66 @@ export class MediaOffset {
     }
   }
 
+  get shim() {
+    return this.#shim;
+  }
+
+  set shim(val) {
+    this.#shim = val;
+    const media = this.#media;
+
+    if (val) {
+      // Patch the media instance, not the prototype.
+      // Restore original descriptors if the offset-shim attribute is removed.
+
+      Object.defineProperty(media, 'currentTime', {
+        configurable: true,
+        get: () => this.currentTime,
+        set: (val) => { this.currentTime = val }
+      });
+
+      Object.defineProperty(media, 'duration', {
+        configurable: true,
+        get: () => this.duration,
+      });
+
+      Object.defineProperty(media, 'ended', {
+        configurable: true,
+        get: () => this.ended,
+      });
+
+      if ('seekable' in media) {
+        Object.defineProperty(media, 'seekable', {
+          configurable: true,
+          get: () => this.seekable,
+        });
+      }
+
+      if ('buffered' in media) {
+        Object.defineProperty(media, 'buffered', {
+          configurable: true,
+          get: () => this.buffered,
+        });
+      }
+
+      if ('played' in media) {
+        Object.defineProperty(media, 'played', {
+          configurable: true,
+          get: () => this.played,
+        });
+      }
+
+    } else {
+
+      delete media.currentTime;
+      delete media.duration;
+      delete media.ended;
+      delete media.seekable;
+      delete media.buffered;
+      delete media.played;
+    }
+  }
+
   get start() {
     return this.#start;
   }
@@ -152,7 +216,7 @@ function setNative(obj, prop, val) {
 
 export function getDescriptor(obj, prop) {
   for (
-    let proto = obj;
+    let proto = Object.getPrototypeOf(obj);
     proto && proto !== HTMLElement.prototype;
     proto = Object.getPrototypeOf(proto)
   ) {
